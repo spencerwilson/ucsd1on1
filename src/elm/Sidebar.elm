@@ -4,6 +4,7 @@ import Dict exposing (Dict)
 import Html exposing (..)
 import Html.Attributes exposing (style)
 import Html.Events exposing (onClick)
+import Set
 import String
 import Fn
 import Types exposing (..)
@@ -38,9 +39,9 @@ sidebar user allCourses selectedCourse =
 
 getStudentSidebarItems : StudentInfo -> Dict CourseId Course -> Maybe CourseId -> List (Html Msg)
 getStudentSidebarItems student allCourses selectedCourse =
-    [ Enrolled, Tutoring ]
+    [ Enrolled Nothing, Tutoring Set.empty ]
         |> List.map (Fn.getStudentCourses allCourses student)
-        |> List.map2 (,) [ Enrolled, Tutoring ]
+        |> List.map2 (,) [ Enrolled Nothing, Tutoring Set.empty ]
         |> List.concatMap
             (\( relation, dict ) ->
                 if Dict.size dict > 0 then

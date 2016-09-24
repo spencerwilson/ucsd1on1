@@ -32,21 +32,19 @@ init =
                         , id = "spencer@ucsd.edu"
                         , courses =
                             Dict.fromList
-                                [ ( "cse120a"
-                                  , { relation = Enrolled
-                                    , sessions = Set.empty
-                                    }
-                                  )
-                                , ( "cse141a"
-                                  , { relation = Enrolled
-                                    , sessions = Set.empty
-                                    }
-                                  )
-                                , ( "cse101abc"
-                                  , { relation = Tutoring
-                                    , sessions = Set.empty
-                                    }
-                                  )
+                                [ ( "cse120a", Enrolled (Just "session0") )
+                                , ( "cse141a", Enrolled Nothing )
+                                , ( "cse101abc", Tutoring Set.empty )
+                                ]
+                        }
+                  )
+                , ( "joetutor@ucsd.edu"
+                  , Student
+                        { name = "Joe Tutor"
+                        , id = "joetutor@ucsd.edu"
+                        , courses =
+                            Dict.fromList
+                                [ ( "cse120a", Tutoring (Set.fromList [ "session0" ]) )
                                 ]
                         }
                   )
@@ -56,7 +54,15 @@ init =
             Dict.fromList
                 [ ( "cse21ab", Course "cse21ab" "CSE 21" "Tiefenbruck" Dict.empty )
                 , ( "cse101abc", Course "cse101abc" "CSE 101" "Jones" Dict.empty )
-                , ( "cse120a", Course "cse120a" "CSE 120" "Voelker" Dict.empty )
+                , ( "cse120a"
+                  , Course "cse120a"
+                        "CSE 120"
+                        "Voelker"
+                        (Dict.fromList
+                            [ ( "session0", Session "session0" (Date.fromTime 0) "joetutor@ucsd.edu" "CSE Basement" Registered )
+                            ]
+                        )
+                  )
                 , ( "cse141a", Course "cse141a" "CSE 141" "Porter" Dict.empty )
                 ]
     in
@@ -122,20 +128,34 @@ courseBody me users course =
             [ h1 [] [ text course.name ] ]
 
         Admin ->
-            --facultyCourseView info
+            --adminCourseView info
             [ h1 [] [ text course.name ] ]
 
 
 studentCourseView : StudentInfo -> Dict UserId User -> Course -> List (Html Msg)
 studentCourseView me users course =
     case Dict.get course.id me.courses of
-        Just { relation, sessions } ->
-            case relation of
-                Enrolled ->
-                    [ text "You're enrolled" ]
+        Just (Enrolled sessionId) ->
+            [ h1 [] [ text course.name ]
+            , enrolledStudentMessage sessionId course
+            ]
 
-                Tutoring ->
-                    [ text "You're tutoring" ]
+        Just (Tutoring sessions) ->
+            [ h1 [] [ text "You're tutoring" ] ]
 
         Nothing ->
             [ text "You're not in this class!" ]
+
+
+enrolledStudentMessage : Maybe SessionId -> Course -> Html Msg
+enrolledStudentMessage sessionId course =
+    case sessionId of
+        Just id ->
+            text "Wow you're in!!!"
+
+        Nothing ->
+            p []
+                [ text "You are "
+                , span [ style [ ( "font-weight", "bolder" ) ] ] [ text "not" ]
+                , text " registered for a 1:1 session. Click a tutor's name below to sign up."
+                ]
