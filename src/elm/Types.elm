@@ -17,8 +17,8 @@ type Msg
 
 
 type CourseRelation
-    = Enrolled
-    | Tutoring
+    = Enrolled (Maybe SessionId)
+    | Tutoring (Set SessionId)
 
 
 type Registration
@@ -70,11 +70,7 @@ type alias BasicInfo =
 
 type alias StudentSpecific a =
     { a
-        | courses :
-            Dict CourseId
-                { relation : CourseRelation
-                , sessions : Set SessionId
-                }
+        | courses : Dict CourseId CourseRelation
     }
 
 
