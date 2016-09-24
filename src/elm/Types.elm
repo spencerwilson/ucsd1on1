@@ -17,13 +17,13 @@ type Msg
 
 
 type CourseRelation
-    = Enrolled Id
-    | Tutoring Id
+    = Enrolled
+    | Tutoring
 
 
 type Registration
     = Open
-    | Registered Id
+    | Registered
 
 
 type alias Model =
@@ -58,6 +58,10 @@ type alias Id =
     String
 
 
+type alias SessionId =
+    Id
+
+
 type alias BasicInfo =
     { name : String
     , id : UserId
@@ -66,7 +70,11 @@ type alias BasicInfo =
 
 type alias StudentSpecific a =
     { a
-        | courses : Dict CourseId CourseRelation
+        | courses :
+            Dict CourseId
+                { relation : CourseRelation
+                , sessions : Set SessionId
+                }
     }
 
 
@@ -88,14 +96,14 @@ type alias Course =
     { id : CourseId
     , name : String
     , instructor : UserId
-    , sessions : Dict Id Session
+    , sessions : Dict SessionId Session
     }
 
 
 type alias Session =
-    { id : Id
+    { id : SessionId
     , time : Date
-    , tutor : Id
+    , tutor : UserId
     , location : String
     , registration : Registration
     }

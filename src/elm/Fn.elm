@@ -3,7 +3,6 @@ module Fn exposing (..)
 import Dict exposing (Dict)
 import Set exposing (Set)
 import String
-
 import Types exposing (..)
 
 
@@ -13,17 +12,8 @@ import Types exposing (..)
 getStudentCourses : Dict CourseId Course -> StudentInfo -> CourseRelation -> Dict CourseId Course
 getStudentCourses allCourses student relation =
     let
-        hasRelation : CourseRelation -> CourseId -> CourseRelation -> Bool
-        hasRelation first _ second =
-            case ( first, second ) of
-                ( Enrolled _, Enrolled _ ) ->
-                    True
-
-                ( Tutoring _, Tutoring _ ) ->
-                    True
-
-                _ ->
-                    False
+        hasRelation ref _ dictValue =
+            ref == dictValue.relation
     in
         student.courses
             |> Dict.filter (hasRelation relation)
@@ -45,10 +35,10 @@ getFacultyCourses allCourses faculty =
 relationToString : CourseRelation -> String
 relationToString relation =
     case relation of
-        Enrolled id ->
+        Enrolled ->
             "taking"
 
-        Tutoring id ->
+        Tutoring ->
             "tutoring"
 
 

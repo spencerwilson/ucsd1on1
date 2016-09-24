@@ -7,7 +7,6 @@ import Html.App
 import Html.Attributes exposing (style)
 import Set exposing (Set)
 import String
-
 import Fn
 import Sidebar exposing (sidebar)
 import Types exposing (..)
@@ -33,10 +32,21 @@ init =
                         , id = "spencer@ucsd.edu"
                         , courses =
                             Dict.fromList
-                                [ ( "cse105abc", Enrolled "abc" )
-                                , ( "cse21bc", Tutoring "123" )
-                                , ( "cse20a", Tutoring "456" )
-                                , ( "cse140", Enrolled "def" )
+                                [ ( "cse120a"
+                                  , { relation = Enrolled
+                                    , sessions = Set.empty
+                                    }
+                                  )
+                                , ( "cse141a"
+                                  , { relation = Enrolled
+                                    , sessions = Set.empty
+                                    }
+                                  )
+                                , ( "cse101abc"
+                                  , { relation = Tutoring
+                                    , sessions = Set.empty
+                                    }
+                                  )
                                 ]
                         }
                   )
@@ -44,10 +54,10 @@ init =
 
         courses =
             Dict.fromList
-                [ ( "cse140", Course "cse140" "CSE 140" "Rosing" Dict.empty )
-                , ( "cse105abc", Course "cse105abc" "CSE 105" "Minnes" Dict.empty )
-                , ( "cse20a", Course "cse20a" "CSE 20" "Tiefenbruck" Dict.empty )
-                , ( "cse21bc", Course "cse21bc" "CSE 21" "Jones" Dict.empty )
+                [ ( "cse21ab", Course "cse21ab" "CSE 21" "Tiefenbruck" Dict.empty )
+                , ( "cse101abc", Course "cse101abc" "CSE 101" "Jones" Dict.empty )
+                , ( "cse120a", Course "cse120a" "CSE 120" "Voelker" Dict.empty )
+                , ( "cse141a", Course "cse141a" "CSE 141" "Porter" Dict.empty )
                 ]
     in
         { me = Just "spencer@ucsd.edu"
@@ -118,6 +128,14 @@ courseBody me users course =
 
 studentCourseView : StudentInfo -> Dict UserId User -> Course -> List (Html Msg)
 studentCourseView me users course =
-    [ h1 [] [ text course.name ]
-    , text "hi"
-    ]
+    case Dict.get course.id me.courses of
+        Just { relation, sessions } ->
+            case relation of
+                Enrolled ->
+                    [ text "You're enrolled" ]
+
+                Tutoring ->
+                    [ text "You're tutoring" ]
+
+        Nothing ->
+            [ text "You're not in this class!" ]
