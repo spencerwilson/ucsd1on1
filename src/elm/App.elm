@@ -14,7 +14,7 @@ import Types exposing (..)
 
 main =
     Html.App.program
-        { init = ( init, Cmd.none )
+        { init = ( init, Fn.getWeekNumber )
         , update = update
         , view = view
         , subscriptions = \_ -> Sub.none
@@ -70,24 +70,28 @@ init =
         , users = users
         , courses = courses
         , selectedCourse = Nothing
+        , currentWeek = 1
         }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        SetWeek week ->
+            { model | currentWeek = week } ! []
+
         SelectCourse id ->
             { model | selectedCourse = Just id } ! []
 
 
 view : Model -> Html Msg
-view { me, users, courses, selectedCourse } =
+view { me, users, courses, selectedCourse, currentWeek } =
     case me of
         Just id ->
             case Dict.get id users of
                 Just me ->
                     div [ style [ ( "display", "flex" ), ( "height", "100%" ) ] ]
-                        [ sidebar me courses selectedCourse
+                        [ sidebar me courses selectedCourse currentWeek
                         , courseContainer me users courses selectedCourse
                         ]
 

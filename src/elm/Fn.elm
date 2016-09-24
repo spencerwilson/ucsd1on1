@@ -1,9 +1,30 @@
 module Fn exposing (..)
 
+import Date
 import Dict exposing (Dict)
 import Set exposing (Set)
 import String
+import Task
+import Time exposing (Time)
 import Types exposing (..)
+
+
+getWeekNumber : Cmd Msg
+getWeekNumber =
+    let
+        oneWeek =
+            24 * Time.hour * 7
+
+        weekZeroStart =
+            1474182000000
+
+        computeWeek : Time -> Msg
+        computeWeek now =
+            SetWeek <| floor <| (now - weekZeroStart) / oneWeek
+    in
+        Time.now
+            |> Task.perform (\_ -> SetWeek <| Debug.crash "") computeWeek
+
 
 
 -- Get the Course models to which a User has a certain CourseRelation

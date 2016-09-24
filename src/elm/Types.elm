@@ -13,7 +13,8 @@ type User
 
 
 type Msg
-    = SelectCourse CourseId
+    = SetWeek Int
+    | SelectCourse CourseId
 
 
 type CourseRelation
@@ -31,6 +32,7 @@ type alias Model =
     , users : Dict UserId User
     , courses : Dict CourseId Course
     , selectedCourse : Maybe CourseId
+    , currentWeek : Int
     }
 
 

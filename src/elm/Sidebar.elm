@@ -10,8 +10,8 @@ import Fn
 import Types exposing (..)
 
 
-sidebar : User -> Dict CourseId Course -> Maybe CourseId -> Html Msg
-sidebar user allCourses selectedCourse =
+sidebar : User -> Dict CourseId Course -> Maybe CourseId -> Int -> Html Msg
+sidebar user allCourses selectedCourse currentWeek =
     let
         courseSections : List (Html Msg)
         courseSections =
@@ -29,7 +29,7 @@ sidebar user allCourses selectedCourse =
             [ header [ style [ ( "margin-bottom", "15px" ) ] ]
                 [ div [ style [ ( "margin-bottom", "10px" ) ] ]
                     [ h1 [ style [ ( "margin-bottom", "0px" ) ] ] [ text "UCSD 1:1" ]
-                    , div [] [ text "Week 0" ]
+                    , div [] [ text <| "Week " ++ toString currentWeek ]
                     ]
                 , p [] [ text <| String.concat [ "Ahoy, ", Fn.displayName user ] ]
                 , section [] courseSections
