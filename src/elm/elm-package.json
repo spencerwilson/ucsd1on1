@@ -1,7 +1,7 @@
 {
     "version": "1.0.0",
-    "summary": "A seamless 1:1 tutoring system for UC San Diego",
-    "repository": "https://github.com/user/project.git",
+    "summary": "The ucsd1on1 client application",
+    "repository": "https://github.com/sw12/ucsd1on1.git",
     "license": "MIT",
     "source-directories": [
         "."
