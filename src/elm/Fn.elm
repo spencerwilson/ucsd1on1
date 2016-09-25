@@ -9,6 +9,11 @@ import Time exposing (Time)
 import Types exposing (..)
 
 
+addCmdToPair : Cmd a -> ( b, Cmd a ) -> ( b, Cmd a )
+addCmdToPair cmd ( first, other ) =
+    ( first, Cmd.batch [ cmd, other ] )
+
+
 getWeekNumber : Cmd Msg
 getWeekNumber =
     let

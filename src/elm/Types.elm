@@ -17,6 +17,10 @@ type Msg
     | SelectCourse CourseId
 
 
+type Page
+    = CoursePage CourseId
+
+
 type CourseRelation
     = Enrolled (Maybe SessionId)
     | Tutoring (Set SessionId)

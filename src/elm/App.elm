@@ -5,6 +5,7 @@ import Dict exposing (Dict)
 import Html exposing (..)
 import Html.App
 import Html.Attributes exposing (style)
+import Navigation
 import Set exposing (Set)
 import String
 import Fn
@@ -13,16 +14,48 @@ import Types exposing (..)
 
 
 main =
-    Html.App.program
-        { init = ( init, Fn.getWeekNumber )
+    Navigation.program urlParser
+        { init = init
         , update = update
         , view = view
+        , urlUpdate = urlUpdate
         , subscriptions = \_ -> Sub.none
         }
 
 
-init : Model
-init =
+dropHash : String -> String
+dropHash =
+    String.dropLeft 2
+
+
+urlParser : Navigation.Parser Page
+urlParser =
+    Navigation.makeParser (.hash >> dropHash >> CoursePage)
+
+
+toUrl : Maybe CourseId -> String
+toUrl courseId =
+    "#/" ++ Maybe.withDefault "App.elm" courseId
+
+
+urlUpdate : Page -> Model -> ( Model, Cmd Msg )
+urlUpdate page model =
+    case page of
+        CoursePage courseId ->
+            if courseId == "App.elm" then
+                model ! []
+            else if courseId == "App.elm" || Dict.member courseId model.courses then
+                ( { model | selectedCourse = Just courseId }
+                , Cmd.none
+                )
+            else
+                ( model
+                , Navigation.modifyUrl <| toUrl model.selectedCourse
+                )
+
+
+init : Page -> ( Model, Cmd Msg )
+init page =
     let
         users =
             Dict.fromList
@@ -65,13 +98,17 @@ init =
                   )
                 , ( "cse141a", Course "cse141a" "CSE 141" "Porter" Dict.empty )
                 ]
+
+        initialModel =
+            { me = Just "spencer@ucsd.edu"
+            , users = users
+            , courses = courses
+            , selectedCourse = Nothing
+            , currentWeek = 1
+            }
     in
-        { me = Just "spencer@ucsd.edu"
-        , users = users
-        , courses = courses
-        , selectedCourse = Nothing
-        , currentWeek = 1
-        }
+        urlUpdate page initialModel
+            |> Fn.addCmdToPair Fn.getWeekNumber
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -81,7 +118,9 @@ update msg model =
             { model | currentWeek = week } ! []
 
         SelectCourse id ->
-            { model | selectedCourse = Just id } ! []
+            ( { model | selectedCourse = Just id }
+            , Navigation.modifyUrl <| toUrl (Just id)
+            )
 
 
 view : Model -> Html Msg
