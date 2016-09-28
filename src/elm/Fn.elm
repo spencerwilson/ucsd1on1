@@ -1,6 +1,6 @@
 module Fn exposing (..)
 
-import Date
+import Date exposing (Date)
 import Dict exposing (Dict)
 import Set exposing (Set)
 import String
@@ -87,3 +87,39 @@ displayName user =
 
         Admin ->
             "admin"
+
+
+formatDate : Date -> String
+formatDate date =
+    toString (Date.dayOfWeek date)
+        ++ ", "
+        ++ toString (Date.month date)
+        ++ " "
+        ++ toString (Date.day date)
+
+
+formatTime : Date -> String
+formatTime date =
+    let
+        hour =
+            toString (Date.hour date % 13 + 1)
+
+        minute =
+            toString (Date.minute date)
+
+        amPm =
+            if (Date.hour date) >= 12 then
+                "PM"
+            else
+                "AM"
+    in
+        hour
+            ++ ":"
+            ++ (if String.length minute == 1 then
+                    "0"
+                else
+                    ""
+               )
+            ++ minute
+            ++ " "
+            ++ amPm

@@ -6,6 +6,7 @@ import Html exposing (..)
 import Html.App
 import Html.Attributes exposing (style)
 import Navigation
+import Maybe exposing (andThen)
 import Set exposing (Set)
 import String
 import Fn
@@ -78,6 +79,7 @@ init page =
                         , courses =
                             Dict.fromList
                                 [ ( "cse120a", Tutoring (Set.fromList [ "session0" ]) )
+                                , ( "cse141a", Tutoring (Set.fromList [ "session0" ]) )
                                 ]
                         }
                   )
@@ -180,7 +182,7 @@ studentCourseView me users course =
     case Dict.get course.id me.courses of
         Just (Enrolled sessionId) ->
             [ h1 [] [ text course.name ]
-            , enrolledStudentMessage sessionId course
+            , p [] <| enrolledStudentMessage course users sessionId
             ]
 
         Just (Tutoring sessions) ->
@@ -190,15 +192,59 @@ studentCourseView me users course =
             [ text "You're not in this class!" ]
 
 
-enrolledStudentMessage : Maybe SessionId -> Course -> Html Msg
-enrolledStudentMessage sessionId course =
+boldFont =
+    style [ ( "font-weight", "bolder" ) ]
+
+
+italicFont =
+    style [ ( "font-style", "italic" ) ]
+
+
+enrolledStudentMessage : Course -> Dict UserId User -> Maybe SessionId -> List (Html Msg)
+enrolledStudentMessage course users sessionId =
     case sessionId of
         Just id ->
-            text "Wow you're in!!!"
+            let
+                session =
+                    Dict.get id course.sessions
+                        |> Maybe.withDefault (Session id (Date.fromTime 0) "unknown" "unknown" Registered)
+
+                tutor =
+                    Dict.get session.tutor users
+
+                tutorName =
+                    case tutor of
+                        Just (Student info) ->
+                            info.name
+
+                        Just (Faculty info) ->
+                            info.name
+
+                        Just Admin ->
+                            "THE ADMIN"
+
+                        Nothing ->
+                            "unknown"
+            in
+                [ text "You are signed up for a 1:1..."
+                , div [ style [ ( "margin-left", "1.2em" ) ] ]
+                    [ span [ italicFont ] [ text "with " ]
+                    , span [ boldFont ] [ text tutorName ]
+                    , br [] []
+                    , span [ italicFont ] [ text "on " ]
+                    , span [ boldFont ] [ text <| Fn.formatDate session.time ]
+                    , br [] []
+                    , span [ italicFont ] [ text " at " ]
+                    , span [ boldFont ] [ text <| Fn.formatTime session.time ]
+                    , br [] []
+                    , span [ italicFont ] [ text " in " ]
+                    , span [ boldFont ] [ text session.location ]
+                    ]
+                , text " See you then!"
+                ]
 
         Nothing ->
-            p []
-                [ text "You are "
-                , span [ style [ ( "font-weight", "bolder" ) ] ] [ text "not" ]
-                , text " registered for a 1:1 session. Click a tutor's name below to sign up."
-                ]
+            [ text "You are "
+            , span [ style [ ( "font-weight", "bolder" ) ] ] [ text "not" ]
+            , text " signed up for a 1:1 session. Click a tutor's name below to sign up."
+            ]
