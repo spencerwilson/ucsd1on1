@@ -9,6 +9,7 @@ import Navigation
 import Maybe exposing (andThen)
 import Set exposing (Set)
 import String
+import Time exposing (Time)
 import Fn
 import Sidebar exposing (sidebar)
 import Types exposing (..)
@@ -98,7 +99,15 @@ init page =
                             ]
                         )
                   )
-                , ( "cse141a", Course "cse141a" "CSE 141" "Porter" Dict.empty )
+                , ( "cse141a"
+                  , Course "cse141a"
+                        "CSE 141"
+                        "Porter"
+                        (Dict.fromList
+                            [ ( "session1", Session "session1" (Date.fromTime 0) "joetutor@ucsd.edu" "CSE Basement" Open )
+                            ]
+                        )
+                  )
                 ]
 
         initialModel =
@@ -247,4 +256,74 @@ enrolledStudentMessage course users sessionId =
             [ text "You are "
             , span [ style [ ( "font-weight", "bolder" ) ] ] [ text "not" ]
             , text " signed up for a 1:1 session. Click a tutor's name below to sign up."
+            , viewCourseSessions course users
             ]
+
+
+viewCourseSessions : Course -> Dict UserId User -> Html Msg
+viewCourseSessions course users =
+    let
+        openSessions =
+            course.sessions
+                |> Dict.filter (\_ { registration } -> registration == Open)
+
+        pairs =
+            pairSessionsWithTutors openSessions users
+    in
+        pairs
+            |> aggregateByTime
+            |> Dict.map viewSessionBlock
+            |> Dict.values
+            |> div []
+
+
+
+--div [] List.map (viewSession users) course.sessions
+
+
+aggregateByTime : List ( Session, Maybe User ) -> Dict Time (List ( Session, Maybe User ))
+aggregateByTime =
+    let
+        upsert ( session, user ) dict =
+            let
+                time =
+                    Date.toTime session.time
+            in
+                case Dict.get time dict of
+                    Just list ->
+                        Dict.insert time (( session, user ) :: list) dict
+
+                    Nothing ->
+                        Dict.insert time [ ( session, user ) ] dict
+    in
+        List.foldr upsert Dict.empty
+
+
+pairSessionsWithTutors : Dict SessionId Session -> Dict UserId User -> List ( Session, Maybe User )
+pairSessionsWithTutors sessions users =
+    let
+        getTutorForSession session =
+            Dict.get session.tutor users
+    in
+        sessions
+            |> Dict.values
+            |> List.map (\s -> ( s, getTutorForSession s ))
+
+
+viewSessionBlock : Time -> List ( Session, Maybe User ) -> Html Msg
+viewSessionBlock time sessionTutorPairs =
+    let
+        timeAsDate = Date.fromTime time
+        timeText = (Fn.formatDate timeAsDate) ++ " " ++ (Fn.formatTime timeAsDate)
+        timeLabel =
+            label [] [ text timeText ]
+
+        sessions =
+            List.map viewSessionEntry sessionTutorPairs
+    in
+        div [] (timeLabel :: sessions)
+
+
+viewSessionEntry : ( Session, Maybe User ) -> Html Msg
+viewSessionEntry ( session, user ) =
+    li [] [ text <| toString ( session, user ) ]
